@@ -17,15 +17,20 @@ import (
 	"github.com/square/go-jose/v3"
 )
 
-func generateJWE(c *gin.Context) {
-	// Generate a new RSA key pair for each request
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate private key"})
-		return
-	}
-	publicKey := &privateKey.PublicKey
+var privateKey *rsa.PrivateKey
+var publicKey *rsa.PublicKey
 
+func init() {
+	// Generate a new RSA key pair at startup
+	var err error
+	privateKey, err = rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %v", err)
+	}
+	publicKey = &privateKey.PublicKey
+}
+
+func generateJWE(c *gin.Context) {
 	// Read base64 encoded header
 	header := c.GetHeader("X-Claims")
 	if header == "" {
@@ -126,14 +131,38 @@ func generateJWE(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func verifyJWE(c *gin.Context) {
+	// Read JWE from header
+	jweString := c.GetHeader("X-JWE")
+	if jweString == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing X-JWE header"})
+		return
+	}
+
+	// Decrypt the JWE
+	decryptedJWT, err := decryptJWE(jweString, privateKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decrypt JWE"})
+		return
+	}
+
+	// Print the decrypted JWT for debugging
+	fmt.Println("Decrypted JWT:", decryptedJWT)
+
+	// Respond with the decrypted JWT
+	c.JSON(http.StatusOK, gin.H{"jwt": decryptedJWT})
+}
+
 func decryptJWE(jweString string, privateKey *rsa.PrivateKey) (string, error) {
 	object, err := jose.ParseEncrypted(jweString)
 	if err != nil {
+		log.Printf("Error parsing JWE: %v", err)
 		return "", err
 	}
 
 	decrypted, err := object.Decrypt(privateKey)
 	if err != nil {
+		log.Printf("Error decrypting JWE: %v", err)
 		return "", err
 	}
 
@@ -143,6 +172,7 @@ func decryptJWE(jweString string, privateKey *rsa.PrivateKey) (string, error) {
 func main() {
 	r := gin.Default()
 	r.POST("/generate-jwe", generateJWE)
+	r.POST("/verify-jwe", verifyJWE)
 	log.Println("Server started at :8080")
 	r.Run(":8080")
 }
