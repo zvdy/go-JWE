@@ -1,4 +1,3 @@
-// main_test.go
 package main
 
 import (
@@ -13,10 +12,10 @@ import (
 )
 
 func setupRouter() *gin.Engine {
-	r := gin.Default()
-	r.POST("/generate-jwe", generateJWE)
-	r.POST("/verify-jwe", verifyJWE)
-	return r
+	router := gin.Default()
+	router.POST("/generate-jwe", generateJWE)
+	router.POST("/verify-jwe", verifyJWE)
+	return router
 }
 
 func TestGenerateJWE(t *testing.T) {
