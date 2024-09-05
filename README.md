@@ -92,11 +92,7 @@ The `docker-compose.yml` file is used to define and run multi-container Docker a
 ### Generate JWE
 
 ```sh
-curl -X POST http://localhost:8080/generate
-
--j
-
-we \
+curl -X POST http://localhost:8080/generate-jwe \
   -H "X-Claims: eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ=="
 ```
 
@@ -128,7 +124,3 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 - [Gin](https://github.com/gin-gonic/gin) - HTTP web framework for Go.
 - [go-jose](https://github.com/square/go-jose) - An implementation of JOSE standards (JWE, JWS, JWT) in Go.
 - [golang-jwt](https://github.com/golang-jwt/jwt) - A Go implementation of JSON Web Tokens.
-
----
-
-Feel free to customize this README to better fit your project's needs.
