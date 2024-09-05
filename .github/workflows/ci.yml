@@ -19,20 +19,6 @@ jobs:
       with:
         go-version: 1.23
 
-    - name: Get GitHub Actions runner IP
-      id: get_ip
-      run: echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
-
-    - name: Whitelist GitHub Actions runner IP
-      run: |
-        IP_ADDRESS=${{ env.RUNNER_IP }}
-        echo "Whitelisting IP: $IP_ADDRESS"
-        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
-          --request POST \
-          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
-          --header "Content-Type: application/json" \
-          --data "[{\"ipAddress\": \"$IP_ADDRESS\", \"comment\": \"GitHub Actions runner IP\"}]"
-
     - name: Install dependencies
       run: go mod tidy
 
@@ -40,12 +26,3 @@ jobs:
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
       run: go test -v ./src/main/...
-
-    - name: Remove GitHub Actions runner IP from whitelist
-      if: always()
-      run: |
-        IP_ADDRESS=${{ env.RUNNER_IP }}
-        echo "Removing IP: $IP_ADDRESS from whitelist"
-        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
-          --request DELETE \
-          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList/$IP_ADDRESS"
