@@ -19,13 +19,18 @@ jobs:
       with:
         go-version: 1.23
 
+    - name: Get GitHub Actions runner IP
+      id: get_ip
+      run: echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
+
     - name: Whitelist GitHub Actions runner IP
-      uses: mongodb-developer/mongodb-atlas-ip-whitelist-action@v0.2.0
-      with:
-        publicKey: ${{ secrets.ATLAS_PUBLIC_KEY }}
-        privateKey: ${{ secrets.ATLAS_PRIVATE_KEY }}
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        deleteAfterSeconds: 600 # Optional: Automatically remove the IP after 10 minutes
+      run: |
+        IP_ADDRESS=${{ env.RUNNER_IP }}
+        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+          --request POST \
+          --url "https://cloud.mongodb.com/api/atlas/v1.0/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
+          --header "Content-Type: application/json" \
+          --data "[{\"ipAddress\": \"$IP_ADDRESS\", \"comment\": \"GitHub Actions runner IP\"}]"
 
     - name: Install dependencies
       run: go mod tidy
@@ -34,3 +39,11 @@ jobs:
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
       run: go test -v ./src/main/...
+
+    - name: Remove GitHub Actions runner IP from whitelist
+      if: always()
+      run: |
+        IP_ADDRESS=${{ env.RUNNER_IP }}
+        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+          --request DELETE \
+          --url "https://cloud.mongodb.com/api/atlas/v1.0/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList/$IP_ADDRESS"
