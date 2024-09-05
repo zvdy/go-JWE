@@ -19,6 +19,14 @@ jobs:
       with:
         go-version: 1.23
 
+    - name: Whitelist GitHub Actions runner IP
+      uses: mongodb-developer/mongodb-atlas-ip-whitelist-action@v0.2.0
+      with:
+        publicKey: ${{ secrets.ATLAS_PUBLIC_KEY }}
+        privateKey: ${{ secrets.ATLAS_PRIVATE_KEY }}
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        deleteAfterSeconds: 600 # Optional: Automatically remove the IP after 10 minutes
+
     - name: Install dependencies
       run: go mod tidy
 
