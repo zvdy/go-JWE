@@ -19,6 +19,15 @@ jobs:
       with:
         go-version: 1.23
 
+    - name: Whitelist 0.0.0.0
+      run: |
+        echo "Whitelisting IP: 0.0.0.0"
+        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+          --request POST \
+          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
+          --header "Content-Type: application/json" \
+          --data "[{\"ipAddress\": \"0.0.0.0\", \"comment\": \"GitHub Actions runner IP\"}]"
+
     - name: Install dependencies
       run: go mod tidy
 
@@ -26,3 +35,11 @@ jobs:
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
       run: go test -v ./src/main/...
+
+    - name: Remove 0.0.0.0 from whitelist
+      if: always()
+      run: |
+        echo "Removing IP: 0.0.0.0 from whitelist"
+        curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
+          --request DELETE \
+          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList/0.0.0.0"
