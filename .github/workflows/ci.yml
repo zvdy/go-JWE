@@ -26,9 +26,10 @@ jobs:
     - name: Whitelist GitHub Actions runner IP
       run: |
         IP_ADDRESS=${{ env.RUNNER_IP }}
+        echo "Whitelisting IP: $IP_ADDRESS"
         curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
           --request POST \
-          --url "https://cloud.mongodb.com/api/atlas/v1.0/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
+          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList" \
           --header "Content-Type: application/json" \
           --data "[{\"ipAddress\": \"$IP_ADDRESS\", \"comment\": \"GitHub Actions runner IP\"}]"
 
@@ -44,6 +45,7 @@ jobs:
       if: always()
       run: |
         IP_ADDRESS=${{ env.RUNNER_IP }}
+        echo "Removing IP: $IP_ADDRESS from whitelist"
         curl -u "${{ secrets.ATLAS_PUBLIC_KEY }}:${{ secrets.ATLAS_PRIVATE_KEY }}" \
           --request DELETE \
-          --url "https://cloud.mongodb.com/api/atlas/v1.0/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList/$IP_ADDRESS"
+          --url "https://cloud.mongodb.com/api/atlas/v2/groups/${{ secrets.ATLAS_PROJECT_ID }}/accessList/$IP_ADDRESS"
