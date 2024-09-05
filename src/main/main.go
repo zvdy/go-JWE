@@ -1,7 +1,7 @@
-// main.go
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -11,14 +11,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/square/go-jose/v3"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var privateKey *rsa.PrivateKey
 var publicKey *rsa.PublicKey
+var mongoClient *mongo.Client
+var mongoCollection *mongo.Collection
 
 func init() {
 	// Generate a new RSA key pair at startup
@@ -28,6 +34,33 @@ func init() {
 		log.Fatalf("Failed to generate private key: %v", err)
 	}
 	publicKey = &privateKey.PublicKey
+
+	// Connect to MongoDB
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		log.Fatalf("MONGO_URI environment variable not set")
+	}
+
+	mongoClient, err = mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatalf("Failed to create MongoDB client: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err = mongoClient.Connect(ctx)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	// Ping MongoDB to ensure connection is established
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		log.Fatalf("Failed to ping MongoDB: %v", err)
+	}
+
+	// Select the database and collection
+	mongoCollection = mongoClient.Database("jwe_db").Collection("responses")
+	log.Println("Connected to MongoDB")
 }
 
 func generateJWE(c *gin.Context) {
@@ -66,7 +99,7 @@ func generateJWE(c *gin.Context) {
 		return
 	}
 
-	// Print the signed JWT for debugging
+	// Print the JWT for debugging
 	fmt.Println("Signed JWT:", jwtString)
 
 	// Encrypt JWT to create JWE
@@ -127,8 +160,25 @@ func generateJWE(c *gin.Context) {
 		"jwt_privateKey": string(privateKeyPEM),
 	}
 
+	// Store response in MongoDB
+	if err := storeResponse(response); err != nil {
+		log.Printf("Failed to store response in MongoDB: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store response in MongoDB"})
+		return
+	}
+
 	// Respond with JSON
 	c.JSON(http.StatusOK, response)
+}
+
+func storeResponse(response gin.H) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := mongoCollection.InsertOne(ctx, response)
+	if err != nil {
+		log.Printf("Error inserting document into MongoDB: %v", err)
+	}
+	return err
 }
 
 func verifyJWE(c *gin.Context) {

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    image: golang:1.23
+    container_name: jwe-api
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: go run src/main/main.go
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+
+  mongo:
+    image: mongo:4.4
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
