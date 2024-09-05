@@ -1,0 +1,3 @@
+# omit all .env files
+
+.env
