@@ -47,6 +47,22 @@ This project provides a service for generating and verifying JSON Web Encryption
 
    The server will start at `http://localhost:8080`
 
+
+# Docker-Compose Deployment
+
+The `docker-compose.yml` file is used to define and run multi-container Docker applications. In this project, it is used to set up the necessary services, including the database (if you want to run it locally).
+
+## Steps to Deploy
+
+1. **Install Docker and Docker-Compose**: Ensure Docker and Docker-Compose are installed on your machine.
+
+2. **Configuration**: The `docker-compose.yml` file includes the configuration for the services required by the application. This typically includes the application service and a database service.
+
+3. **Running the Services**: Use the following command to start the services defined in the `docker-compose.yml` file:
+   ```sh
+   docker-compose up
+
+
 ## API Endpoints
 
 ### Generate JWE
