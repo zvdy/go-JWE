@@ -10,17 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mongo:
-        image: mongo:latest
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -33,20 +22,7 @@ jobs:
     - name: Install dependencies
       run: go mod tidy
 
-    - name: Wait for MongoDB to be ready
-      run: |
-        for i in {1..60}; do
-          nc -z localhost 27017 && echo "MongoDB is up" && break
-          echo "Waiting for MongoDB..."
-          sleep 1
-        done
-        if [ $i -eq 60 ]; then
-          echo "MongoDB failed to start"
-          docker logs $(docker ps -q --filter ancestor=mongo:latest)
-          exit 1
-        fi
-
     - name: Run tests
       env:
-        MONGO_URI: mongodb://localhost:27017
+        MONGO_URI: ${{ secrets.MONGO_URI }}
       run: go test -v ./src/main/...
