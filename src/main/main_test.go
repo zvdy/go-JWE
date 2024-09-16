@@ -83,7 +83,8 @@ func TestVerifyJWE(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		var response map[string]string
-		json.Unmarshal(w.Body.Bytes(), &response)
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
 		jweString := response["jwe"]
 
 		req, _ = http.NewRequest("POST", "/verify-jwe", nil)
