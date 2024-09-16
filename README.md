@@ -1,5 +1,6 @@
 # JWE JWT Service
 ![Golang](https://img.shields.io/badge/Go-00ADD8?) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
+
 This project provides a service for generating and verifying JSON Web Encryption (JWE) and JSON Web Tokens (JWT) using RSA encryption. The service is built using Go, Gin, and MongoDB.
 
 ## Features
@@ -102,6 +103,10 @@ curl -X POST http://localhost:8080/generate-jwe \
 curl -X POST http://localhost:8080/verify-jwe \
   -H "X-JWE: your_jwe_string_here"
 ```
+
+### MongoDB Atlas view 
+
+![img](img/atlas.png)
 
 ## Project Structure
 
