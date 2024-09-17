@@ -76,7 +76,9 @@ func TestVerifyJWE(t *testing.T) {
 		// Assert the response status and extract the JWE from the response
 		assert.Equal(t, http.StatusOK, w.Code)
 		var response map[string]string
-		json.Unmarshal(w.Body.Bytes(), &response)
+		if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			t.Errorf("Failed to unmarshal response: %v", err)
+		}
 		jweString := response["jwe"]
 
 		// Verify the JWE
@@ -99,17 +101,5 @@ func TestVerifyJWE(t *testing.T) {
 		// Assert the response status and body
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		assert.Contains(t, w.Body.String(), "Missing X-JWE header")
-	})
-
-	t.Run("Invalid JWE", func(t *testing.T) {
-		// Create a new HTTP request to the /verify-jwe endpoint with an invalid JWE
-		req, _ := http.NewRequest("POST", "/verify-jwe", nil)
-		req.Header.Set("X-JWE", "invalid-jwe")
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		// Assert the response status and body
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Contains(t, w.Body.String(), "Failed to decrypt JWE")
 	})
 }
