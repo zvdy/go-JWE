@@ -108,12 +108,37 @@ curl -X POST http://localhost:8080/verify-jwe \
 
 ![img](img/atlas.png)
 
+
+### Explanation of [`cicd.yml`]
+
+The [`cicd.yml`](.github/workflows/cicd.yml) file defines a CI/CD pipeline for the project. It includes two main jobs: `build` and `create-pull-request`.
+
+1. **Build and Test Job**:
+   - **Job Name:** [`build`]
+   - **Runs On:** `ubuntu-latest`
+   - **Steps**:
+     - **Checkout Repository:** Uses the `actions/checkout@v4` action to check out the repository.
+     - **Set up Go:** Uses the `actions/setup-go@v4` action to set up Go with version [`1.23`].
+     - **Build:** Runs the `go build -v ./...` command to build the Go project.
+     - **Test:** Runs the `go test -v ./...` command to test the Go project.
+
+2. **Create Pull Request Job**:
+   - **Job Name:** `create-pull-request`
+   - **Needs:** [`build`] (depends on the [`build`] job)
+   - **Runs On:** `ubuntu-latest`
+   - **Condition:** Runs only if the branch is [`development`].
+   - **Steps**:
+     - **Checkout Repository:** Uses the `actions/checkout@v4` action to check out the repository.
+     - **Create Pull Request:** Uses the `peter-evans/create-pull-request@v4` action to create a pull request from [`development`] to [`main`].
+
+This CI/CD pipeline ensures that the code is continuously integrated and deployed, making it easier to manage and deploy changes to the project.
+
 ## Project Structure
 
 - `main.go`: Main application file containing the service logic.
 - `go.mod`: Go module file for dependency management.
 - `claims/claims.go`: Script to automatically base64 encode claims.
-- `.github/workflows/ci.yml`: GitHub Action workflow.
+- `.github/workflows/cicd.yml`: GitHub Action workflow.
 - `docker-compose.yml`: Adds the database logic.
 
 ## License
