@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,9 +20,9 @@ func setupRouter() *gin.Engine {
 }
 
 func TestMain(m *testing.M) {
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error loading .env file")
+	// Check if MONGO_URI is set
+	if os.Getenv("MONGO_URI") == "" {
+		panic("MONGO_URI environment variable not set")
 	}
 	os.Exit(m.Run())
 }
