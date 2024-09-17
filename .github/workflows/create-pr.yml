@@ -1,0 +1,24 @@
+name: Create Pull Request
+
+on:
+  workflow_run:
+    workflows: ["Go"]
+    types:
+      - completed
+
+jobs:
+  create-pull-request:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v4
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        branch: development
+        base: main
+        title: 'Automated Pull Request from Development to Main'
+        body: 'This pull request is automatically created by GitHub Actions.'
