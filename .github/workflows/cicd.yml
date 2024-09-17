@@ -2,6 +2,8 @@ name: CI/CD
 
 on:
   push:
+    branches:
+      - development
 
 jobs:
   build:
@@ -20,13 +22,14 @@ jobs:
       run: go build -v ./...
 
     - name: Test
+      id: test
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
       run: go test -v ./...
 
   create-pull-request:
     needs: build
-    if: github.ref == 'refs/heads/development'
+    if: needs.build.outputs.test.result == 'success' && github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
