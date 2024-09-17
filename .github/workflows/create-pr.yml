@@ -1,14 +1,10 @@
 name: Create Pull Request
 
 on:
-  workflow_run:
-    workflows: ["Go"]
-    types:
-      - completed
-
+  workflow_dispatch:
 jobs:
   create-pull-request:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'development'
+    if: github.event.conclusion == 'success' && github.event.head_branch == 'development'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
