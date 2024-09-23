@@ -12,14 +12,14 @@ func main() {
 		"iss":   "https://example.com",          // Issuer
 		"sub":   "1234567890",                   // Subject
 		"aud":   "https://api.example.com",      // Audience
-		"exp":   "1672531199",                     // Expiration time (Unix timestamp)
-		"nbf":   "1516239022",                     // Not before time (Unix timestamp)
-		"iat":   "1516239022",                     // Issued at time (Unix timestamp)
+		"exp":   "1672531199",                   // Expiration time (Unix timestamp)
+		"nbf":   "1516239022",                   // Not before time (Unix timestamp)
+		"iat":   "1516239022",                   // Issued at time (Unix timestamp)
 		"jti":   "unique-jwt-id-12345",          // JWT ID
 		"name":  "John Doe",                     // Custom claim: Name
 		"email": "john.doe@example.com",         // Custom claim: Email
 		"role":  "admin",                        // Custom claim: Role
-		"admin": "true",                           // Custom claim: Admin flag
+		"admin": "true",                         // Custom claim: Admin flag
 		"org":   "Example Organization",         // Custom claim: Organization
 		"scope": "read:messages write:messages", // Custom claim: Scope
 	}
