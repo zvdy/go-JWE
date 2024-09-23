@@ -36,7 +36,7 @@ jobs:
       uses: peter-evans/create-pull-request@v4
       with:
         token: ${{ secrets.GH_TOKEN }}
-        branch: development
-        base: main
+        branch: main
+        base: development
         title: 'Automated Pull Request from Development to Main'
         body: 'This pull request is automatically created by GitHub Actions.'
